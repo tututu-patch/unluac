@@ -82,35 +82,49 @@ class LStringType53 extends LStringType {
       return LString.NULL;
     } else if(size == 0xFF) {
       sizeT = header.sizeT.parse(buffer, header);
+      size = sizeT.getValue(); // Assuming BInteger has a method to get its value as int
     } else {
       sizeT = new BInteger(size);
     }
+    
     final StringBuilder b = this.b.get();
     b.setLength(0);
-    
+  
     // Read the entire string into the StringBuilder first
     for (int i = 0; i < size; i++) {
       b.append((char) (0xFF & buffer.get()));
     }
-    
-    // Now apply the new algorithm
-    int x = size - 1;
-    int v5 = b.charAt(0) ^ x;
-    int v6 = x + v5;
-    char v8 = (char) x;
-    for (int i = 0; i < size - 1; i++) {
-      v8 = (char) ((char) x % 255);
-      x += v6;
-      b.setCharAt(i, (char) ((b.charAt(i)) ^ (v8)));
-    }
+  
+    // Define a new run() method for the new algorithm
+    final int x = size - 1;
+    Runnable run = new Runnable() {
+      
+      int xLocal = x;
+      char v8 = (char) (xLocal ^ b.charAt(0)); // Assuming the first character is used for some kind of offset or key
+      
+      @Override
+      public void run() {
+        for(int i = 1; i < b.length(); i++) { // Start from 1, assuming the first char is not to be XOR'd
+          v8 = (char) ((xLocal % 255) & 0xFF);
+          xLocal += v8;
+          
+          // Perform XOR on each character in the StringBuilder
+          b.setCharAt(i, (char) (b.charAt(i) ^ v8));
+        }
+      }
+    };
+  
+    // Call the run() method to apply the new algorithm
+    run.run();
     
     String s = b.toString();
     if (header.debug) {
       System.out.println("-- parsed <string> \"" + s + "\"");
     }
-    
+  
     return new LString(s);
   }
+
 
   
   @Override
