@@ -87,26 +87,31 @@ class LStringType53 extends LStringType {
     }
     final StringBuilder b = this.b.get();
     b.setLength(0);
-    sizeT.iterate(new Runnable() {
-      
-      boolean first = true;
-      
-      @Override
-      public void run() {
-        if(!first) {
-          b.append((char) (0xFF & buffer.get()));
-        } else {
-          first = false;
-        }
-      }
-      
-    });
+    
+    // Read the entire string into the StringBuilder first
+    for (int i = 0; i < size; i++) {
+      b.append((char) (0xFF & buffer.get()));
+    }
+    
+    // Now apply the new algorithm
+    int x = size - 1;
+    int v5 = b.charAt(0) ^ x;
+    int v6 = x + v5;
+    char v8 = (char) x;
+    for (int i = 0; i < size - 1; i++) {
+      v8 = (char) ((char) x % 255);
+      x += v6;
+      b.setCharAt(i, (char) ((b.charAt(i)) ^ (v8)));
+    }
+    
     String s = b.toString();
-    if(header.debug) {
+    if (header.debug) {
       System.out.println("-- parsed <string> \"" + s + "\"");
     }
+    
     return new LString(s);
   }
+
   
   @Override
   public void write(OutputStream out, BHeader header, LString string) throws IOException {
