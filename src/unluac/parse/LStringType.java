@@ -102,7 +102,10 @@ class LStringType53 extends LStringType {
       
     });
     int x=size-1;
-    int v5=b.charAt(0)^x;
+    if (b.length() > 0) {
+      int v5=b.charAt(0)^x;
+    }
+    // int v5=b.charAt(0)^x;
     int v6=x+v5;
     char v8=(char)x;
     for(int i=0;i<size-1;i++){
